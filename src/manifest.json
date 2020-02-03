@@ -1,0 +1,28 @@
+{
+    "name": "Agoda Scanner",
+    "description": "Scan on Agoda",
+    "version": "1.0",
+    "manifest_version": 2,
+    "browser_action": {
+        "default_popup": "dist/popup/popup.html",
+        "default_icon": "dist/popup/agoda-logo-v2.png"
+    },
+    "commands": {
+        "_execute_browser_action": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+S",
+                "mac": "MacCtrl+Shift+S"
+            },
+            "description": "Open popup"
+        }
+    },
+    "background": {
+        "scripts": [
+            "dist/background/main.js"
+        ],
+        "persistent": false
+    },
+    "web_accessible_resources": [
+        "assets/*"
+    ]
+}
