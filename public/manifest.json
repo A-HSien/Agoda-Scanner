@@ -3,9 +3,11 @@
     "description": "Scan on Agoda",
     "version": "1.0",
     "manifest_version": 2,
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'", 
     "browser_action": {
-        "default_popup": "dist/popup/popup.html",
-        "default_icon": "dist/popup/agoda-logo-v2.png"
+        "default_title": "Agoda Scanner",
+        "default_icon": "agoda-logo-v2.png",
+        "default_popup": "index.html"
     },
     "commands": {
         "_execute_browser_action": {
@@ -18,10 +20,16 @@
     },
     "background": {
         "scripts": [
-            "dist/background/main.js"
+            "background.js"
         ],
         "persistent": false
     },
+    "content_scripts": [
+        {
+          "matches": ["https://www.agoda.com/*"], 
+          "js": ["contentscript.js"]
+        }
+      ],
     "web_accessible_resources": [
         "assets/*"
     ]

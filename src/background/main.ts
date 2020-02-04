@@ -1,1 +1,3 @@
-alert('bk');
+
+alert('bk'); 
+export const module = null;
