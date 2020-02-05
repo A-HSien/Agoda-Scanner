@@ -1,82 +1,9 @@
 import $ from "jquery";
+import { SearchResult, parseElementToResult } from "./SearchResult";
+import { Scanner } from "./Scanner"; 
  
 
-export interface SearchResult { 
-    area: string ,
-    hotelName: string ,
-    hotelStar: number ,
-    specialRank: string,
-    roomTypeName: string ,
-    hasBreakfirst?: boolean ,
-    price: number,
-};
-
-export class Scanner {
-    private scanSpeed = 5000; 
-    private brakes = 2;
-    private scanResult :Element[] = [];
-
-    runScanAsync = async () => {
-            const prevLen = this.scanResult.length;
-            this.scanResult = await this.scanAsync(); 
-            const currLen = this.scanResult.length;
-            console.log('result count: '+ currLen);
-            if (prevLen===currLen)
-                this.brakes--;
-            if (this.brakes!==0) 
-                await this.runScanAsync(); 
-            return this.scanResult ;
-    };
-
-    private scanAsync  ()  {
-        window.scrollTo(0, 0);
-        return new Promise<Element[]>((resolve, reject) =>{
-            $('html').animate(
-                { scrollTop: $(document).height() },
-                {
-                    duration: this.scanSpeed,
-                    complete: () => {
-                        const hotels = Array.from(document.querySelectorAll('.hotel-item-box')); 
-                        resolve(hotels);
-                    }
-                }
-            ); 
-        });
-    };
-};
-
-export function parseElementToResult(ele:Element){ 
-        const hotel = $(ele);
-        const hotelName = hotel.find('.InfoBox__HotelTitle').text() as string;
-        const price = hotel.find('.price-box__price__amount').text().split(',').join('');
-        const area = hotel.find('.areacity-name-text').text();
-        const hasBreakfirst = hotel.find('.breakfast-included').length > 0;
-
-        let hotelStar: number = 0;
-        try {
-            const startNumberClassName: string = 'ficon-star-';
-            const starClasses: string = hotel.find('.ficon.orange-yellow').attr('class') || '';
-            const starClass: string = starClasses.split(startNumberClassName)[1].split(' ')[0];
-            hotelStar = Number(starClass);
-            hotelStar = (hotelStar >= 10) ? hotelStar / 10 : hotelStar;
-
-        }
-        catch (err) {
-
-        }
-       return { 
-                area,
-                hotelName,
-                hotelStar,
-                specialRank: '',
-                roomTypeName: '',
-                  hasBreakfirst,
-                price: Number(price),
-            } as SearchResult;  
-};
-
-debugger;
-let scanResults : SearchResult[][] = [];
+const scanResults : SearchResult[][] = [];
 const task = async () => {
     const scanner = new Scanner();
     const eles = await scanner.runScanAsync(); 
@@ -88,8 +15,38 @@ const task = async () => {
         setTimeout(() => {
             task();
         }, 500); 
-    } 
+    }   
+        const each = results.map(r => [ r.hotelName, r.area, r.roomTypeName, r.price.toString(10), r.hasBreakfirst?'是':'否' ]);
+       // const  csvContent = "data:text/csv;charset=utf-8," + each.map(e => e.map(e=>e.replace(/,/g, "")).join(",")).join("\r\n");
+        const dlAnchorElem = document.createElement('a');
+
+        const rows = [
+            ["name1", "city1", "some other info"],
+            ["name2", "city2", "more info"]
+        ];
+        
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + rows.map(e => e.join(",")).join("\n");
+
+        dlAnchorElem.setAttribute("href",encodeURI( csvContent ));
+        dlAnchorElem.setAttribute("download", "data.csv");
+        dlAnchorElem.click()
+    
 };
- // task();
+// task();
+
+
+
+const rows = [
+    ["中文", "中文", "some other info"],
+    ["name2", "中文", "more info"]
+];
+
+let csvContent = "data:text/csv;charset=utf-8," 
+    + rows.map(e => e.join(",")).join("\n");
+    const dlAnchorElem = document.createElement('a');
+dlAnchorElem.setAttribute("href",encodeURI( csvContent ));
+dlAnchorElem.setAttribute("download", "data.csv");
+dlAnchorElem.click()
 
 export const module = null;
