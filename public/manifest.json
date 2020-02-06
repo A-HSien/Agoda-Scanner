@@ -6,7 +6,7 @@
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'", 
     "browser_action": {
         "default_title": "Agoda Scanner",
-        "default_icon": "agoda-logo-v2.png",
+        "default_icon": "logo.png",
         "default_popup": "index.html"
     },
     "commands": {
@@ -29,7 +29,10 @@
           "matches": ["https://www.agoda.com/*"], 
           "js": ["contentscript.js"]
         }
-      ],
+    ],
+    "permissions": [
+        "storage"
+    ],
     "web_accessible_resources": [
         "assets/*"
     ]
