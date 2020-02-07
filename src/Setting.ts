@@ -25,6 +25,7 @@ export function getSettingsStream() {
     const get: (keys: string, callback: (items: { [key: string]: Settings }) => void) => void = chrome.storage.sync.get;
     const stream = bindCallback(get).bind(chrome.storage.sync);
     return stream(storageKey).pipe(map(({ [storageKey]: currentSettings }) => {
+        if (!currentSettings) return {} as Settings;
         currentSettings.scanSpeed = Number(currentSettings.scanSpeed);
         return currentSettings;
     }));
