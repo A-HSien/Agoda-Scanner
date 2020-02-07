@@ -1,13 +1,14 @@
 
 export const storageKey = 'settings';
+export const dateFormat = 'YYYY-MM-DD';
 
 export const defaultSettings = {
     isEnabled: true,
     scanSpeed: 5000,
+    city: 4951,
+    checkIn: ''
 };
-
 export const settings = { ...defaultSettings };
-
 export async function reloadSettings() {
     Object.assign(settings, await getSettingsAsync());
 };
