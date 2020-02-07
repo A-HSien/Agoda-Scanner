@@ -2,7 +2,6 @@ import $ from "jquery";
 import { settings } from "../Setting";
 
 
-
 export class Scanner {
 
     private brakes = 2;
@@ -22,6 +21,7 @@ export class Scanner {
 
     private scanAsync() {
         window.scrollTo(0, 0);
+        $('body').click();
         return new Promise<Element[]>((resolve, reject) => {
             $('html').animate(
                 { scrollTop: $(document).height() },

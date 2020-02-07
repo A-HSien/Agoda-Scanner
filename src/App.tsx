@@ -1,39 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import moment from 'moment';
 import './App.css';
-import { getSettingsAsync, setSettingsAsync, settings, dateFormat } from './Setting';
+import { getSettingsStream, setSettingsStream, settings, dateFormat, Settings } from './Setting';
 
+
+interface States extends Settings {
+  checkIn: string,
+};
+
+let settingsInited = false;
 
 const App = () => {
 
-  const [states, setStates] = useState({ ...settings });
-
-  useEffect(() => {
-    (async () => {
-      const settings = await getSettingsAsync();
-      settings.checkIn = moment().add(1, 'day').format(dateFormat)
-      setStates(settings);
-    })();
+  const [states, setStates] = useState<States>({
+    ...settings,
+    checkIn: moment().add(1, 'day').format(dateFormat)
   });
+
+  if (!settingsInited) {
+    settingsInited = true;
+    getSettingsStream().subscribe(settings => {
+      const newStates = {
+        ...states,
+        ...settings,
+      };
+      setStates(newStates);
+    });
+  }
 
   const handleChange = async (event: any) => {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
     const settings = { ...states, [target.name]: value };
     setStates(settings);
-    await setSettingsAsync(settings);
+    setSettingsStream(settings).subscribe();
   };
 
+
   const go = () => {
-    if (!chrome) return;
     const { city, checkIn } = states;
-    var newURL = `https://www.agoda.com/zh-tw/search?city=${city}&checkIn=${checkIn}`;
-    chrome.tabs.create({ url: newURL });
+    const scannerNumber = settings.scannerNumber = Date.now();
+    var newURL = `https://www.agoda.com/zh-tw/search?scannerNumber=${scannerNumber}&city=${city}&checkIn=${checkIn}`;
+    console.log('go to ' + newURL);
+    if (!chrome.tabs) return;
+
+    setSettingsStream(settings).subscribe(settings => {
+      console.log(settings);
+      debugger;
+      chrome.tabs.update({ url: newURL });
+    });
   };
 
   return (
     <div className="app">
-      <h3>Agoda Scanner</h3>
+      <label className="title">Agoda Scanner</label>
+      <hr />
       <div className="grid">
 
         <label>開啟</label>
@@ -62,9 +83,13 @@ const App = () => {
           onChange={handleChange} />
 
       </div>
-{/*       <button type="button" >
+
+      <button type="button"
+        disabled={!states.isEnabled}
+        onClick={go}>
         GO!
-        </button> */}
+      </button>
+
     </div>
   );
 }

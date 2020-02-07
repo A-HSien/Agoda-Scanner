@@ -1,19 +1,21 @@
-import { Settings, defaultSettings, getSettingsAsync, setSettingsAsync } from "../Setting"; 
+import { defaultSettings, getSettingsStream, setSettingsStream } from "../Setting";
 
-debugger;
- 
-!async function(){ 
-   const currentSettings = await getSettingsAsync();
-   const settings = {...defaultSettings} as any; 
-   Object.keys(defaultSettings).forEach(key=>{
-       settings[key]=currentSettings[key as keyof Settings];
-    });  
-   await setSettingsAsync(settings);
+
+!async function () {
+    const currentSettings = await getSettingsStream().toPromise();
+    const settings = { ...defaultSettings };
+    Object.keys(defaultSettings).forEach(key => {
+        const value = (currentSettings as any)[key];
+        if (value != null || value !== undefined)
+            (settings as any)[key] = value;
+    });
+    settings.scannerNumber = Date.now();
+    await setSettingsStream(settings).toPromise();
 }();
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => { 
-    chrome.browserAction.setBadgeText({text:message});
-    sendResponse("回覆");  
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.browserAction.setBadgeText({ text: message });
+    sendResponse("回覆");
 });
 
 export const module = null;

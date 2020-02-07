@@ -1,9 +1,23 @@
 .app {
     font-size: 16px;
+    padding: 10px;
+}
+
+.title {
+    color: #2c7284;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .grid {
+    color: #1d4c58;
     width: 300px;
     display: grid;
     grid-template-columns: 120px auto;
+}
+
+button:disabled,
+button[disabled] {
+    color: #cccccc;
+    cursor: not-allowed;
 }

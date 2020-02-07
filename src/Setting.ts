@@ -1,39 +1,40 @@
+import { bindCallback, of } from 'rxjs';
+import { map, flatMap } from 'rxjs/operators';
+
 
 export const storageKey = 'settings';
 export const dateFormat = 'YYYY-MM-DD';
-
 export const defaultSettings = {
     isEnabled: true,
     scanSpeed: 5000,
     city: 4951,
-    checkIn: ''
+    scannerNumber: -1,
 };
 export const settings = { ...defaultSettings };
-export async function reloadSettings() {
-    Object.assign(settings, await getSettingsAsync());
-};
-
-
 export type Settings = typeof defaultSettings;
 
-export function getSettingsAsync() {
-    return new Promise<Settings>((resolve, reject) => {
-        if (!chrome.storage) resolve(defaultSettings);
-        else chrome.storage.sync.get(storageKey, ({ [storageKey]: currentSettings }) => {
-            currentSettings.scanSpeed = Number(currentSettings.scanSpeed);
-            resolve(currentSettings);
-        });
-    });
+
+export async function reloadSettings() {
+    return Object.assign(settings, await getSettingsStream().toPromise());
 };
 
-export async function setSettingsAsync(settings: Settings) {
-    return new Promise<Settings>((resolve, reject) => {
-        if (!chrome.storage) resolve();
-        else chrome.storage.sync.set({ [storageKey]: settings }, async () => {
-            const setted = await getSettingsAsync();
-            console.log('Setting updated:');
-            console.log(setted);
-            resolve();
-        });
-    });
+
+export function getSettingsStream() {
+    if (!chrome.storage) return of(defaultSettings);
+
+    const get: (keys: string, callback: (items: { [key: string]: Settings }) => void) => void = chrome.storage.sync.get;
+    const stream = bindCallback(get).bind(chrome.storage.sync);
+    return stream(storageKey).pipe(map(({ [storageKey]: currentSettings }) => {
+        currentSettings.scanSpeed = Number(currentSettings.scanSpeed);
+        return currentSettings;
+    }));
+};
+
+
+export function setSettingsStream(settings: Settings) {
+    if (!chrome.storage) return of(settings);
+
+    const set = chrome.storage.sync.set;
+    const stream = bindCallback(set).bind(chrome.storage.sync);
+    return stream({ [storageKey]: settings }).pipe(flatMap(() => getSettingsStream()));
 };
