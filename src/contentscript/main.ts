@@ -15,6 +15,7 @@ const shouldKeepRun = (settings: Settings) => {
     return settings.isEnabled && settings.scannerNumber === scannerNumber;
 };
 
+debugger;
 
 const updatePagination = setInterval(async () => {
     const settings = await reloadSettings();
